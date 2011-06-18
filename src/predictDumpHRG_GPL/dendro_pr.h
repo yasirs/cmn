@@ -283,8 +283,6 @@ void dendro::recordDendrogramStructure(const string out_file) {
 		} else {
 			fout << "R= " << g->getName(internal[i].R->index) << " (G) ";
 		}
-		//fout << "L= " << internal[i].L->index << " "; if (internal[i].L->type == DENDRO) { fout << "(D) "; } else { fout << "(G) "; }
-		//fout << "R= " << internal[i].R->index << " "; if (internal[i].R->type == DENDRO) { fout << "(D) "; } else { fout << "(G) "; }
 		fout << "p= " << internal[i].p << " ";
 		fout << "e= " << internal[i].e << " ";
 		fout << "n= " << internal[i].n << "\n";
