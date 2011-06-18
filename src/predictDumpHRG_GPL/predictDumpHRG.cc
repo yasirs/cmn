@@ -60,6 +60,7 @@ struct pblock { double L; int i; int j; };
 // ******** Function Prototypes ***************************************************************************
 
 void		recordBestHRG(const int step, const int count, const double thisL);
+void		recordBestPrediction();
 void		recordSampledHRG(const int sample, const double thisL);
 bool		markovChainMonteCarlo();
 bool		MCMCEquilibrium_Find();
@@ -179,8 +180,8 @@ bool MCMCEquilibrium_Find() {
 			if (Likeli > bestL) { // check if this logL beats best
 				bestL = Likeli; 
 				recordBestHRG(t, out_count, bestL);
+				recordBestPrediction();
 				out_count++;
-				// TODO: dump the best dendo's predicted pairs
 			}
 			newMeanL += Likeli;
 			
@@ -230,8 +231,8 @@ bool MCMCEquilibrium_Sample() {
 			if (Likeli > bestL) { // check if this logL beats best
 				bestL = Likeli; 
 				recordBestHRG(t, out_count, bestL);
+				recordBestPrediction();
 				out_count++;
-				// TODO: dump the best dendo's predicted pairs
 			}
 			
 			// We sample the dendrogram space every 1/ptest MCMC moves (on average).
@@ -355,6 +356,16 @@ bool parseCommandLine(int argc, char * argv[]) {
 
 // ********************************************************************************************************
 
+void recordBestPrediction() {
+	string fname = ioparm.d_dir + ioparm.s_scratch + "_best-predicted.wpairs";
+	ofstream fout(fname.c_str(), ios::trunc);
+	d->recordThisPrediction(fout);
+	fout.close();
+	return;
+}
+	
+
+
 void recordBestHRG(const int step, const int count, const double thisL) {
 	
 	time_t t1;
@@ -383,7 +394,7 @@ void recordBestHRG(const int step, const int count, const double thisL) {
 	fout << "HRG           : " << ioparm.s_scratch + "_best-dendro.hrg" << "\n";
 	fout << "InfoFile      : " << ioparm.s_scratch + "_best-dendro.info"  << "\n";
 	fout.close();
-	
+
 	return;
 }
 

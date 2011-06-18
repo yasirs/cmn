@@ -264,6 +264,7 @@ public:
 	void			resetDendrograph();						// reset the dendrograph structures
 	void			printDendrogram();						// write dendrogram structure to terminal
 	void		recordDendrogramStructure(const string out_file);
+	void			recordThisPrediction(ofstream& fout);
 };
 
 // ******** Dendrogram Methods ****************************************************************************
@@ -1310,6 +1311,23 @@ list* dendro::reversePathToRoot(const int leafIndex) {
 }
 
 // ********************************************************************************************************
+
+void	dendro::recordThisPrediction(ofstream& fout) {
+	elementd* ancestor;
+	list	*currL, *prevL;
+	if (paths != NULL) { for (int i=0; i<n; i++) { currL = paths[i]; while (currL != NULL) { prevL = currL;   currL = currL->next;   delete prevL;   prevL = NULL; } paths[i] = NULL; } delete [] paths; } paths = NULL;
+	paths = new list* [n];
+	for (int i=0; i<n; i++) { paths[i] = reversePathToRoot(i); }	// construct paths from root, O(n^2) at worst
+	for (int i=0; i<n; i++) {								// add obs for every node-pair, always O(n^2)
+		for (int j=i+1; j<n; j++) {
+			ancestor = findCommonAncestor(paths, i, j);			// find internal node, O(n) at worst
+			if (ancestor->p > 0)						// only write if prediction is strictly positive
+				fout << g->getName(i) << "\t" << g->getName(j) << "\t" << ancestor->p << "\n";
+		}												// 
+	}
+}													// 
+	
+
 
 void	dendro::sampleAdjacencyLikelihoods() {
 	// Here, we sample the probability values associated with every adjacency in A, weighted by 
