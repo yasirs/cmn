@@ -273,8 +273,18 @@ void dendro::recordDendrogramStructure(const string out_file) {
 	ofstream fout(out_file.c_str(), ios::trunc);
 	for (int i=0; i<(n-1); i++) {
 		fout << "[ " << i << " ] ";
-		fout << "L= " << internal[i].L->index << " "; if (internal[i].L->type == DENDRO) { fout << "(D) "; } else { fout << "(G) "; }
-		fout << "R= " << internal[i].R->index << " "; if (internal[i].R->type == DENDRO) { fout << "(D) "; } else { fout << "(G) "; }
+		if (internal[i].L->type == DENDRO) {
+			fout << "L= " << internal[i].L->index << " (D) ";
+		} else {
+			fout << "L= " << g->getName(internal[i].L->index) << " (G) ";
+		}
+		if (internal[i].R->type == DENDRO) {
+			fout << "R= " << internal[i].R->index << " (D) ";
+		} else {
+			fout << "R= " << g->getName(internal[i].R->index) << " (G) ";
+		}
+		//fout << "L= " << internal[i].L->index << " "; if (internal[i].L->type == DENDRO) { fout << "(D) "; } else { fout << "(G) "; }
+		//fout << "R= " << internal[i].R->index << " "; if (internal[i].R->type == DENDRO) { fout << "(D) "; } else { fout << "(G) "; }
 		fout << "p= " << internal[i].p << " ";
 		fout << "e= " << internal[i].e << " ";
 		fout << "n= " << internal[i].n << "\n";
