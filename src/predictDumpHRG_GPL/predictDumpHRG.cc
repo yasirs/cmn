@@ -62,6 +62,7 @@ struct pblock { double L; int i; int j; };
 void		recordBestHRG(const int step, const int count, const double thisL);
 void		recordBestPrediction();
 void		recordSampledHRG(const int sample, const double thisL);
+void		recordSampledPrediction(int sample);
 bool		markovChainMonteCarlo();
 bool		MCMCEquilibrium_Find();
 bool		MCMCEquilibrium_Sample();
@@ -239,8 +240,8 @@ bool MCMCEquilibrium_Sample() {
 			if (t > thresh and mtr.randExc() < ptest) {
 				sample_num++;
 				d->sampleAdjacencyLikelihoods();		// sample edge likelihoods
-				// TODO: also dump the predicted pairs from dumped dendro
 				recordSampledHRG(sample_num, Likeli);
+				recordSampledPrediction(sample_num);
 				if (sample_num > num_samples) { i = 65536; }
 			}
 			
@@ -400,16 +401,24 @@ void recordBestHRG(const int step, const int count, const double thisL) {
 
 // ********************************************************************************************************
 
+void recordSampledPrediction(int sample) {
+	string fname = ioparm.d_dir + ioparm.dumpfolder + ioparm.s_scratch + "_"+boost::lexical_cast<string>( sample ) + "-predicted.wpairs";
+	ofstream fout(fname.c_str(), ios::trunc);
+	d->recordThisPrediction(fout);
+	fout.close();
+	return;
+}
+
 void recordSampledHRG(const int sample, const double thisL) {
 	
 	time_t t1;
 	
 	// write hrg to file
-	ioparm.f_dg = ioparm.d_dir + ioparm.dumpfolder + ioparm.s_scratch + "_"+boost::lexical_cast<string>( sample ) + "best-dendro.hrg";
+	ioparm.f_dg = ioparm.d_dir + ioparm.dumpfolder + ioparm.s_scratch + "_"+boost::lexical_cast<string>( sample ) + "-dendro.hrg";
 	d->recordDendrogramStructure(ioparm.f_dg);
 	
 	// write statistics about hrg to file
-	ioparm.f_dg_info = ioparm.d_dir + ioparm.dumpfolder + ioparm.s_scratch + "_"+boost::lexical_cast<string>( sample ) + "best-dendro.info";
+	ioparm.f_dg_info = ioparm.d_dir + ioparm.dumpfolder + ioparm.s_scratch + "_"+boost::lexical_cast<string>( sample ) + "-dendro.info";
 
 	t1 = time(&t1); 
 	ofstream fout(ioparm.f_dg_info.c_str(), ios::trunc);
