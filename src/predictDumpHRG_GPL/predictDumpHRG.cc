@@ -114,6 +114,7 @@ pblock*		br_list;				// store adjacencies and their averaged likelihoods
 int			br_length;			// length of br_list
 int			mk;					// number of missing edges (n \choose 2) - m
 int			out_count;			// counts number of maximum found
+double			bestL;				// best Likelihood found (now a global)
 
 char			pauseme;
 
@@ -156,7 +157,7 @@ int main(int argc, char * argv[]) {
 
 
 bool MCMCEquilibrium_Find() {
-	double	dL, Likeli, bestL, oldMeanL, newMeanL;
+	double	dL, Likeli, oldMeanL, newMeanL;
 	bool		flag_taken, flag_eq;
 	int       t = 1;
 	
@@ -207,7 +208,7 @@ bool MCMCEquilibrium_Find() {
 // ********************************************************************************************************
 
 bool MCMCEquilibrium_Sample() {
-	double	dL, Likeli, bestL;
+	double	dL, Likeli;
 	bool		flag_taken;
 	double	ptest       = 1.0/10.0; //(double)(4.0/(double)(ioparm.n));
 	int		thresh      = 100*ioparm.n;
@@ -223,7 +224,6 @@ bool MCMCEquilibrium_Sample() {
 	// to code that yourself.
 
 	cout << "\nstep   \tLogL       \tbest LogL\tMC step\t% complete\n";
-	bestL = d->getLikelihood();
 	while (sample_num < num_samples) {
 		for (int i=0; i<65536; i++) {
 			// Make a single MCMC move
