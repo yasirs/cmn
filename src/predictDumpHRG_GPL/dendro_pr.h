@@ -54,14 +54,19 @@ using namespace std;
 
 #if !defined(list_INCLUDED)
 #define list_INCLUDED
+template <typename dtype>
 class list {
 public:
-	int		x;				// stored elementd in linked-list
-	list*	next;			// pointer to next elementd
+	dtype	x;			// stored elementd in linked-list
+	list<dtype>*	next;			// pointer to next elementd
 	list(); ~list();
 };
-list::list()  { x = -1; next = NULL; }
-list::~list() {}
+template <typename dtype>
+list<dtype>::list()  { x = getnull<dtype>(); next = NULL; }
+template <typename dtype>
+list<dtype>::~list() {}
+
+
 #endif
 
 enum {DENDRO, GRAPH, LEFT, RIGHT};
@@ -236,17 +241,17 @@ private:
 	elementd*		leaf;			// array of n   leaf vertices (the graph G)
 	int			n;				// number of leaf vertices to allocate
 	interns*		d;				// list of internal edges of dendrogram D
-	list**		paths;			// array of path-lists from root to leaf
+	list<int>**	paths;			// array of path-lists from root to leaf
 	double		L;				// log-likelihood of graph G given dendrogram D
 	MTRand		mtr;				// Mersenne Twister random number generator instance
-	rbtree		subtreeL, subtreeR;	// trees for computeEdgeCount() function
+	rbtree<int, int>		subtreeL, subtreeR;	// trees for computeEdgeCount() function
 	
 	void			binarySearchInsert(elementd*, elementd*);							// insert node i according to binary search property
-	list*		binarySearchFind(const double);									// return path to root from leaf
+	list<int>*		binarySearchFind(const double);									// return path to root from leaf
 	int			computeEdgeCount(const int, const short int, const int, const short int);  // compute number of edges between two internal subtrees
-	elementd*		findCommonAncestor(list**, const int, const int);						// find internal node of D that is common ancestor of i,j
+	elementd*		findCommonAncestor(list<int>**, const int, const int);						// find internal node of D that is common ancestor of i,j
 	void			printSubTree(elementd*);											// display the subtree rooted at z
-	list*		reversePathToRoot(const int);										// return reverse of path to leaf from root
+	list<int>*		reversePathToRoot(const int);										// return reverse of path to leaf from root
 	void			QsortMain(block*, int, int);										// quicksort functions
 	int			QsortPartition(block*, int, int, int);
 
@@ -300,7 +305,7 @@ dendro:: dendro() { root   = NULL; internal   = NULL;
 				g      = NULL; 
 }
 dendro::~dendro() {
-	list *curr, *prev;
+	list<int> *curr, *prev;
 	if (g	    != NULL) { delete g;           g		= NULL; }    // O(m)
 	if (internal  != NULL) { delete [] internal; internal  = NULL; }    // O(n)
 	if (leaf      != NULL) { delete [] leaf;     leaf	     = NULL; }    // O(n)
@@ -332,13 +337,13 @@ void dendro::binarySearchInsert(elementd* x, elementd* y) {
 
 // ********************************************************************************************************
 
-list* dendro::binarySearchFind(const double v) {
-	list *head, *tail, *newlist;
+list<int>* dendro::binarySearchFind(const double v) {
+	list<int> *head, *tail, *newlist;
 	elementd *current = root;
 	bool flag_stopSearch = false;
 	
 	while (!flag_stopSearch) {				// continue until we're finished
-		newlist    = new list;				// add this node to the path
+		newlist    = new list<int>;				// add this node to the path
 		newlist->x = current->label;
 		if (current == root) { head       = newlist; tail = head;    }
 		else                 { tail->next = newlist; tail = newlist; }
@@ -432,8 +437,8 @@ void dendro::buildDendrogram() {
 	// binarySearchFind() function returns the list of internal node indices that the search
 	// crossed, in the order of root -> ... -> leaf, for use in the subsequent few operations.
 
-	if (paths != NULL) { list *curr, *prev; for (int i=0; i<n; i++) { curr = paths[i]; while (curr != NULL) { prev = curr;   curr = curr->next;   delete prev;   prev = NULL; } paths[i] = NULL; } delete [] paths; } paths = NULL;
-	paths = new list* [n];
+	if (paths != NULL) { list<int> *curr, *prev; for (int i=0; i<n; i++) { curr = paths[i]; while (curr != NULL) { prev = curr;   curr = curr->next;   delete prev;   prev = NULL; } paths[i] = NULL; } delete [] paths; } paths = NULL;
+	paths = new list<int>* [n];
 	for (int i=0; i<n; i++) { paths[i] = binarySearchFind(leaf[i].p); }
 	
 	if (flag_debug) { cout << ">> dendro: computed paths from root to leafs" << endl; }
@@ -526,7 +531,7 @@ void dendro::buildDendrogram() {
 	// --- Clear memory for paths O(n log n)
 	// Now that we're finished using the paths, we need to deallocate them manually.
 
-	list *current, *previous;
+	list<int> *current, *previous;
 	for (int i=0; i<n; i++) {
 		current = paths[i];
 		while (current != NULL) { previous = current;   current = current->next;   delete previous;   previous = NULL; }
@@ -732,9 +737,9 @@ int dendro::computeEdgeCount(const int a, const short int atype, const int b, co
 
 // ********************************************************************************************************
 
-elementd* dendro::findCommonAncestor(list** paths, const int i, const int j) {
-	list* headOne = paths[i];
-	list* headTwo = paths[j];
+elementd* dendro::findCommonAncestor(list<int>** paths, const int i, const int j) {
+	list<int>* headOne = paths[i];
+	list<int>* headTwo = paths[j];
 	elementd* lastStep;
 	while (headOne->x == headTwo->x) {
 		lastStep = &internal[headOne->x];
@@ -1283,7 +1288,7 @@ void dendro::resetDendrograph() {
 	if (d         != NULL) { delete d;			d         = NULL; }    // O(n)
 	root = NULL;
 	if (paths != NULL) {
-		list *curr, *prev; for (int i=0; i<n; i++) {
+		list<int> *curr, *prev; for (int i=0; i<n; i++) {
 			curr = paths[i]; while (curr != NULL) { prev = curr;   curr = curr->next;   delete prev;   prev = NULL; } paths[i] = NULL; }
 		delete [] paths;
 	} paths = NULL;
@@ -1294,13 +1299,13 @@ void dendro::resetDendrograph() {
 
 // ********************************************************************************************************
 
-list* dendro::reversePathToRoot(const int leafIndex) {
-	list *head, *subhead, *newlist;
+list<int>* dendro::reversePathToRoot(const int leafIndex) {
+	list<int> *head, *subhead, *newlist;
 	head = subhead = newlist = NULL;
 	elementd *current = &leaf[leafIndex];
 	
 	while (current != NULL) {				// continue until we're finished
-		newlist       = new list;			// add this node to the path
+		newlist       = new list<int>;			// add this node to the path
 		newlist->x    = current->index;
 		newlist->next = NULL;
 		if (head == NULL) { head    = newlist; }
@@ -1314,9 +1319,9 @@ list* dendro::reversePathToRoot(const int leafIndex) {
 
 void	dendro::recordThisPrediction(ofstream& fout) {
 	elementd* ancestor;
-	list	*currL, *prevL;
+	list<int>	*currL, *prevL;
 	if (paths != NULL) { for (int i=0; i<n; i++) { currL = paths[i]; while (currL != NULL) { prevL = currL;   currL = currL->next;   delete prevL;   prevL = NULL; } paths[i] = NULL; } delete [] paths; } paths = NULL;
-	paths = new list* [n];
+	paths = new list<int>* [n];
 	for (int i=0; i<n; i++) { paths[i] = reversePathToRoot(i); }	// construct paths from root, O(n^2) at worst
 	for (int i=0; i<n; i++) {								// add obs for every node-pair, always O(n^2)
 		for (int j=i+1; j<n; j++) {
@@ -1343,9 +1348,9 @@ void	dendro::sampleAdjacencyLikelihoods() {
 	if (flag_debug) { cout << "dendro:: tabulating A'" << endl; }
 	if (L > 0.0) { L = 0.0; }
 	elementd* ancestor;
-	list	*currL, *prevL;
+	list<int>	*currL, *prevL;
 	if (paths != NULL) { for (int i=0; i<n; i++) { currL = paths[i]; while (currL != NULL) { prevL = currL;   currL = currL->next;   delete prevL;   prevL = NULL; } paths[i] = NULL; } delete [] paths; } paths = NULL;
-	paths = new list* [n];
+	paths = new list<int>* [n];
 	for (int i=0; i<n; i++) { paths[i] = reversePathToRoot(i); }	// construct paths from root, O(n^2) at worst
 	for (int i=0; i<n; i++) {								// add obs for every node-pair, always O(n^2)
 		for (int j=i+1; j<n; j++) {

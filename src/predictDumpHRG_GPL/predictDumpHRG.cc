@@ -103,8 +103,8 @@ struct ioparameters {
 // ******** Global Variables ******************************************************************************
 
 ioparameters	ioparm;				// program parameters
-rbtree		namesLUT;				// look-up table; translates .graph indices to .pairs indices
-rbtree		namesLUTr;			// look-up table; translates .pairs indices to .graph indices
+rbtree<string, int>	namesLUT;				// look-up table; translates .graph indices to .pairs indices
+//rbtree		namesLUTr;			// look-up table; translates .pairs indices to .graph indices
 dendro*		d;					// inferred dendrograph data structure
 simpleGraph*	g;					// base graph read from file
 int			num_samples;			// number of samples to take for predictions
@@ -469,8 +469,9 @@ void rankCandidatesByProbability() {
 
 bool readPairsFile() {
 
-	int n,m,s,f,a,b;    n = m = 0;
-	elementrb *item;
+	int n,m,a,b;    n = m = 0;
+	string s,f;
+	elementrb<string, int> *item;
 	time_t t1; t1 = time(&t1);
 	time_t t2; t2 = time(&t2);
 
@@ -511,10 +512,10 @@ bool readPairsFile() {
 		if (s != f) {
 			item = namesLUT.findItem(s); a = item->value;
 			item = namesLUT.findItem(f); b = item->value;
-			if (!(g->doesLinkExist(a,b))) { if (!(g->addLink(a,b))) { cout << "Error: (" << s << " " << f << ")" << endl; } else if (g->getName(a) == "") { g->setName(a, num2str(s)); } }
-			if (!(g->doesLinkExist(b,a))) { if (!(g->addLink(b,a))) { cout << "Error: (" << s << " " << f << ")" << endl; } else if (g->getName(b) == "") { g->setName(b, num2str(f)); } }
-			if (!(d->g->doesLinkExist(a,b))) { if (!(d->g->addLink(a,b))) { cout << "Error: (" << s << " " << f << ")" << endl; } else if (d->g->getName(a) == "") { d->g->setName(a, num2str(s)); } }
-			if (!(d->g->doesLinkExist(b,a))) { if (!(d->g->addLink(b,a))) { cout << "Error: (" << s << " " << f << ")" << endl; } else if (d->g->getName(b) == "") { d->g->setName(b, num2str(f)); } }
+			if (!(g->doesLinkExist(a,b))) { if (!(g->addLink(a,b))) { cout << "Error: (" << s << " " << f << ")" << endl; } else if (g->getName(a) == "") { g->setName(a, s); } }
+			if (!(g->doesLinkExist(b,a))) { if (!(g->addLink(b,a))) { cout << "Error: (" << s << " " << f << ")" << endl; } else if (g->getName(b) == "") { g->setName(b, f); } }
+			if (!(d->g->doesLinkExist(a,b))) { if (!(d->g->addLink(a,b))) { cout << "Error: (" << s << " " << f << ")" << endl; } else if (d->g->getName(a) == "") { d->g->setName(a, s); } }
+			if (!(d->g->doesLinkExist(b,a))) { if (!(d->g->addLink(b,a))) { cout << "Error: (" << s << " " << f << ")" << endl; } else if (d->g->getName(b) == "") { d->g->setName(b, f); } }
 		}
 		if (t2-t1>ioparm.timer) {				// check timer; if necessarsy, display
 			cout << "   edges: ["<<m<<"]"<<endl;

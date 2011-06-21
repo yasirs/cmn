@@ -33,6 +33,7 @@
 #define rbtree_INCLUDED
 
 #include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -40,46 +41,63 @@ using namespace std;
 
 #if !defined(list_INCLUDED)
 #define list_INCLUDED
+template <typename datatype> datatype getnull();
+
+template<>
+string getnull() { return "";}
+
+template<>
+int getnull() {return -1;}
+
+template <typename dtype>
 class list {
 public:
-	int		x;				// stored elementd in linked-list
-	list*	next;			// pointer to next elementd
+	dtype	x;			// stored elementd in linked-list
+	list<dtype>*	next;			// pointer to next elementd
 	list(); ~list();
 };
-list::list()  { x = -1; next = NULL; }
-list::~list() {}
+template <typename dtype>
+list<dtype>::list()  { x = getnull<dtype>(); next = NULL; }
+template <typename dtype>
+list<dtype>::~list() {}
 #endif
 
+template <typename ktype, typename vtype>
 class keyValuePair {
 public:
-	int		x;					// elementrb key (int)
-	int		y;					// stored value (int)
-	keyValuePair*	next;			// linked-list pointer
+	ktype		x;					// elementrb key (string)
+	vtype		y;					// stored value (int)
+	keyValuePair<ktype, vtype>*	next;			// linked-list pointer
 	keyValuePair(); ~keyValuePair();
 };
-keyValuePair::keyValuePair()  { x = -1; y = -1; next = NULL; }
-keyValuePair::~keyValuePair() {}
+template <typename ktype, typename vtype>
+keyValuePair<ktype, vtype>::keyValuePair()  { x = getnull<ktype>(); y = getnull<vtype>(); next = NULL; }
+template <typename ktype, typename vtype>
+keyValuePair<ktype, vtype>::~keyValuePair() {}
 
 // ******** Tree elementrb Class ****************************************************************************
 
+template <typename ktype, typename vtype>
 class elementrb {
 public:
-	int		key;					// search key (int)
-	int		value;				// stored value (int)
+	ktype		key;					// search key (string)
+	vtype		value;				// stored value (int)
 	
 	bool		color;				// F: BLACK
 								// T: RED
 	short int mark;				// marker
 	
-	elementrb   *parent;			// pointer to parent node
-	elementrb   *left;				// pointer for left subtree
-	elementrb   *right;				// pointer for right subtree
+	elementrb<ktype, vtype>   *parent;			// pointer to parent node
+	elementrb<ktype, vtype>   *left;				// pointer for left subtree
+	elementrb<ktype, vtype>   *right;				// pointer for right subtree
 	
 	elementrb(); ~elementrb();
 };
-elementrb::elementrb()  {	key = -1; value = -1; color = false; mark = 0;
+template <typename ktype, typename vtype>
+elementrb<ktype, vtype>::elementrb()  {	key = getnull<vtype>(); value = getnull<vtype>(); color = false; mark = 0;
 						parent  = NULL; left  = NULL; right  = NULL; }
-elementrb::~elementrb() {}
+template <typename ktype, typename vtype>
+elementrb<ktype, vtype>::~elementrb() {}
 
 // ******** Red-Black Tree Class **************************************************************************
 /*   This vector implementation is a red-black balanced binary tree data structure.
@@ -90,49 +108,51 @@ elementrb::~elementrb() {}
  *	Beware of this limitation.
  */
 
+
+template <typename ktype, typename vtype>
 class rbtree {
 private:
-	elementrb*		root;						// binary tree root
-	elementrb*		leaf;						// all leaf nodes
+	elementrb<ktype, vtype>*		root;						// binary tree root
+	elementrb<ktype, vtype>*		leaf;						// all leaf nodes
 	int				support;						// number of nodes in the tree
 
-	void				rotateLeft(elementrb *x);		// left-rotation operator
-	void				rotateRight(elementrb *y);		// right-rotation operator
-	void				insertCleanup(elementrb *z);		// house-keeping after insertion
-	void				deleteCleanup(elementrb *x);		// house-keeping after deletion
-	keyValuePair*		returnSubtreeAsList(elementrb *z, keyValuePair *head);
-	void				printSubTree(elementrb *z);		// display the subtree rooted at z
-	void				deleteSubTree(elementrb *z);		// delete subtree rooted at z
-	elementrb*		returnMinKey(elementrb *z);		// returns minimum of subtree rooted at z
-	elementrb*		returnSuccessor(elementrb *z);	// returns successor of z's key
+	void				rotateLeft(elementrb<ktype, vtype> *x);		// left-rotation operator
+	void				rotateRight(elementrb<ktype, vtype> *y);		// right-rotation operator
+	void				insertCleanup(elementrb<ktype, vtype> *z);		// house-keeping after insertion
+	void				deleteCleanup(elementrb<ktype, vtype> *x);		// house-keeping after deletion
+	keyValuePair<ktype, vtype>*		returnSubtreeAsList(elementrb<ktype, vtype> *z, keyValuePair<ktype, vtype> *head);
+	void				printSubTree(elementrb<ktype, vtype> *z);		// display the subtree rooted at z
+	void				deleteSubTree(elementrb<ktype, vtype> *z);		// delete subtree rooted at z
+	elementrb<ktype, vtype>*		returnMinKey(elementrb<ktype, vtype> *z);		// returns minimum of subtree rooted at z
+	elementrb<ktype, vtype>*		returnSuccessor(elementrb<ktype, vtype> *z);	// returns successor of z's key
 	
 public:
 	rbtree(); ~rbtree();							// default constructor/destructor
 
-	int			returnValue(const int searchKey);		// returns value associated with searchKey
-	elementrb*	findItem(const int searchKey);		// returns T if searchKey found, and
-												// points foundNode at the corresponding node
-	void			insertItem(int newKey, int newValue);	// insert a new key with stored value
-	void			replaceItem(int key, int newValue);	// replace value of a node with given key
-	void			incrementValue(int key);				// increment the value of the given key
-	void			deleteItem(int killKey);				// delete a node with given key
-	void			deleteTree();						// delete the entire tree
-	int*			returnArrayOfKeys();				// return array of keys in tree
-	list*		returnListOfKeys();					// return list of keys in tree
-	keyValuePair*	returnTreeAsList();					// return the tree as a list of keyValuePairs
-	keyValuePair	returnMaxKey();					// returns the maximum key in the tree
-	keyValuePair	returnMinKey();					// returns the minimum key in the tree
-	int			returnNodecount();					// returns number of items in tree
+	vtype			returnValue(const ktype& searchKey);		// returns value associated with searchKey
+	elementrb<ktype, vtype>*	findItem(const ktype& searchKey);	// returns T if searchKey found, and
+										// points foundNode at the corresponding node
+	void			insertItem(const ktype& newKey, vtype newValue);	// insert a new key with stored value
+	void			replaceItem(ktype& key, vtype newValue);		// replace value of a node with given key
+	void			incrementValue(ktype& key);			// increment the value of the given key
+	void			deleteItem(ktype& killKey);			// delete a node with given key
+	void			deleteTree();					// delete the entire tree
+	ktype*			returnArrayOfKeys();				// return array of keys in tree
+	list<ktype>*		returnListOfKeys();					// return list of keys in tree
+	keyValuePair<ktype, vtype>*	returnTreeAsList();		// return the tree as a list of keyValuePairs
+	keyValuePair<ktype, vtype>	returnMaxKey();			// returns the maximum key in the tree
+	keyValuePair<ktype, vtype>	returnMinKey();			// returns the minimum key in the tree
+	int			returnNodecount();				// returns number of items in tree
 
-	void			printTree();						// displays tree (in-order traversal)
+	void			printTree();					// displays tree (in-order traversal)
 
 };
 
 // ******** Red-Black Tree Methods ************************************************************************
-
-rbtree::rbtree() {
-	root = new elementrb;
-	leaf = new elementrb;
+template <typename ktype, typename vtype>
+rbtree<ktype, vtype>::rbtree() {
+	root = new elementrb<ktype, vtype>;
+	leaf = new elementrb<ktype, vtype>;
 
 	leaf->parent   = root;
 
@@ -141,7 +161,8 @@ rbtree::rbtree() {
 	support		= 0;
 }
 
-rbtree::~rbtree() {
+template <typename ktype, typename vtype>
+rbtree<ktype, vtype>::~rbtree() {
 	if (root != NULL && (root->left != leaf || root->right != leaf)) { deleteSubTree(root); }
 	support   = 0;
 	delete leaf;
@@ -149,9 +170,11 @@ rbtree::~rbtree() {
 	leaf		= NULL;
 }
 
-void rbtree::deleteTree() { if (root != NULL) { deleteSubTree(root); } return; } // does not leak memory
+template <typename ktype, typename vtype>
+void rbtree<ktype, vtype>::deleteTree() { if (root != NULL) { deleteSubTree(root); } return; } // does not leak memory
 
-void rbtree::deleteSubTree(elementrb *z) {
+template <typename ktype, typename vtype>
+void rbtree<ktype, vtype>::deleteSubTree(elementrb<ktype, vtype> *z) {
 
 	if (z->left  != leaf) { deleteSubTree(z->left);  }
 	if (z->right != leaf) { deleteSubTree(z->right); }
@@ -164,10 +187,11 @@ void rbtree::deleteSubTree(elementrb *z) {
 // public search function - if there exists a elementrb in the tree with key=searchKey,
 // it returns TRUE and foundNode is set to point to the found node; otherwise, it sets
 // foundNode=NULL and returns FALSE
-elementrb* rbtree::findItem(const int searchKey) {
+template <typename ktype, typename vtype>
+elementrb<ktype, vtype>* rbtree<ktype, vtype>::findItem(const ktype& searchKey) {
 
-	elementrb *current;    current = root;
-	if (current->key==-1) { return NULL; }							// empty tree; bail out
+	elementrb<ktype, vtype> *current;    current = root;
+	if (current->key==getnull<ktype>()) { return NULL; }							// empty tree; bail out
 	while (current != leaf) {
 		if (searchKey < current->key) {							// left-or-right?
 			if (current->left  != leaf) { current = current->left;  }	// try moving down-left
@@ -182,20 +206,23 @@ elementrb* rbtree::findItem(const int searchKey) {
 	return NULL;
 } // does not leak memory
 
-int rbtree::returnValue(const int searchKey) {
-	elementrb* test = findItem(searchKey);
-	if (test == NULL) { return 0; } else { return test->value; }
+template <typename ktype, typename vtype>
+vtype rbtree<ktype, vtype>::returnValue(const ktype& searchKey) {
+	elementrb<ktype, vtype>* test = findItem(searchKey);
+	if (test == NULL) { return getnull<vtype>(); } else { return test->value; }
 }
 
-void	rbtree::replaceItem(int key, int newValue) {
-	elementrb* ptr;
+template <typename ktype, typename vtype>
+void	rbtree<ktype, vtype>::replaceItem(ktype& key, vtype newValue) {
+	elementrb<ktype, vtype>* ptr;
 	ptr = findItem(key);
 	ptr->value = newValue;
 	return;
 }
 
-void	rbtree::incrementValue(int key) {
-	elementrb* ptr;
+template <typename ktype, typename vtype>
+void	rbtree<ktype, vtype>::incrementValue(ktype& key) {
+	elementrb<ktype, vtype>* ptr;
 	ptr = findItem(key);
 	ptr->value = 1+ptr->value;
 	return;
@@ -203,12 +230,13 @@ void	rbtree::incrementValue(int key) {
 
 // ******** Return Item Functions *************************************************************************
 
-int* rbtree::returnArrayOfKeys() {
-	int* array;
-	array = new int [support];
+template <typename ktype, typename vtype>
+ktype* rbtree<ktype, vtype>::returnArrayOfKeys() {
+	ktype* array;
+	array = new ktype [support];
 	bool flag_go = true;
 	int index = 0;
-	elementrb *curr;
+	elementrb<ktype, vtype> *curr;
 
 	if (support == 1) { array[0] = root->key; }
 	else if (support == 2) {
@@ -216,7 +244,7 @@ int* rbtree::returnArrayOfKeys() {
 		if (root->left == leaf) { array[1] = root->right->key; } 
 		else { array[1] = root->left->key; }
 	} else {
-		for (int i=0; i<support; i++) { array[i] = -1; }
+		for (int i=0; i<support; i++) { array[i] = getnull<ktype>(); }
 		// non-recursive traversal of tree structure
 		curr		 = root;
 		curr->mark = 1;
@@ -248,13 +276,14 @@ int* rbtree::returnArrayOfKeys() {
 	return array;
 } // does not leak memory
 
-list* rbtree::returnListOfKeys() {
-	keyValuePair *curr, *prev;
-	list         *head, *tail, *newlist;
+template <typename ktype, typename vtype>
+list<ktype>* rbtree<ktype, vtype>::returnListOfKeys() {
+	keyValuePair<ktype, vtype> *curr, *prev;
+	list<ktype>         *head, *tail, *newlist;
 
 	curr = returnTreeAsList();
 	while (curr != NULL) {
-		newlist    = new list;
+		newlist    = new list<ktype>;
 		newlist->x = curr->x;
 		if (head == NULL) { head       = newlist; tail = head;    }
 		else              { tail->next = newlist; tail = newlist; }
@@ -266,10 +295,11 @@ list* rbtree::returnListOfKeys() {
 	return head;
 }
 
-keyValuePair* rbtree::returnTreeAsList() { // pre-order traversal
-	keyValuePair  *head, *tail;
+template <typename ktype, typename vtype>
+keyValuePair<ktype, vtype>* rbtree<ktype, vtype>::returnTreeAsList() { // pre-order traversal
+	keyValuePair<ktype, vtype>  *head, *tail;
 
-	head    = new keyValuePair;
+	head    = new keyValuePair<ktype, vtype>;
 	head->x = root->key;
 	head->y = root->value;
 	tail = head;
@@ -280,10 +310,11 @@ keyValuePair* rbtree::returnTreeAsList() { // pre-order traversal
 	if (head->x == -1) { return NULL; /* empty tree */ } else { return head; }
 }
 
-keyValuePair* rbtree::returnSubtreeAsList(elementrb *z, keyValuePair *head) {
-	keyValuePair *newnode, *tail;
+template <typename ktype, typename vtype>
+keyValuePair<ktype, vtype>* rbtree<ktype, vtype>::returnSubtreeAsList(elementrb<ktype, vtype> *z, keyValuePair<ktype, vtype> *head) {
+	keyValuePair<ktype, vtype> *newnode, *tail;
 	
-	newnode    = new keyValuePair;
+	newnode    = new keyValuePair<ktype, vtype>;
 	newnode->x = z->key;
 	newnode->y = z->value;
 	head->next = newnode;
@@ -295,9 +326,10 @@ keyValuePair* rbtree::returnSubtreeAsList(elementrb *z, keyValuePair *head) {
 	return tail;
 }
 
-keyValuePair rbtree::returnMaxKey() {
-	keyValuePair themax;
-	elementrb *current;
+template <typename ktype, typename vtype>
+keyValuePair<ktype, vtype> rbtree<ktype, vtype>::returnMaxKey() {
+	keyValuePair<ktype, vtype> themax;
+	elementrb<ktype, vtype> *current;
 	current  = root;
 	while (current->right != leaf) {		// search to bottom-right corner of tree
 		current  = current->right; }		// 
@@ -307,9 +339,10 @@ keyValuePair rbtree::returnMaxKey() {
 	return themax;						// return that data
 }
 
-keyValuePair rbtree::returnMinKey() {
-	keyValuePair themin;
-	elementrb *current;
+template <typename ktype, typename vtype>
+keyValuePair<ktype, vtype> rbtree<ktype, vtype>::returnMinKey() {
+	keyValuePair<ktype, vtype> themin;
+	elementrb<ktype, vtype> *current;
 	current = root;
 	while (current->left != leaf) {		// search to bottom-left corner of tree
 		current = current->left; }		// 
@@ -320,8 +353,9 @@ keyValuePair rbtree::returnMinKey() {
 }
 
 // private functions for deleteItem() (although these could easily be made public, I suppose)
-elementrb* rbtree::returnMinKey(elementrb *z) {
-	elementrb *current;
+template <typename ktype, typename vtype>
+elementrb<ktype, vtype>* rbtree<ktype, vtype>::returnMinKey(elementrb<ktype, vtype> *z) {
+	elementrb<ktype, vtype> *current;
 
 	current = z;
 	while (current->left != leaf) {		// search to bottom-right corner of tree
@@ -329,8 +363,9 @@ elementrb* rbtree::returnMinKey(elementrb *z) {
 	return current;					// return pointer to the minimum
 }
 
-elementrb* rbtree::returnSuccessor(elementrb *z) {
-	elementrb *current, *w;
+template <typename ktype, typename vtype>
+elementrb<ktype, vtype>* rbtree<ktype, vtype>::returnSuccessor(elementrb<ktype, vtype> *z) {
+	elementrb<ktype, vtype> *current, *w;
 	
 	w = z;
 	if (w->right != leaf) {				// if right-subtree exists, return min of it
@@ -343,19 +378,21 @@ elementrb* rbtree::returnSuccessor(elementrb *z) {
 	return current;
 }
 
-int rbtree::returnNodecount() { return support; }
+template <typename ktype, typename vtype>
+int rbtree<ktype, vtype>::returnNodecount() { return support; }
 
 // ******** Insert Functions ******************************************************************************
 // public insert function
-void rbtree::insertItem(int newKey, int newValue) {
+template <typename ktype, typename vtype>
+void rbtree<ktype, vtype>::insertItem(const ktype& newKey, vtype newValue) {
 	
 	// first we check to see if newKey is already present in the tree; if so, we do nothing;
 	// if not, we must find where to insert the key
-	elementrb *newNode, *current;
+	elementrb<ktype, vtype> *newNode, *current;
 
 	current = findItem(newKey);						// find newKey in tree; return pointer to it O(log k)
 	if (current == NULL) {
-		newNode			= new elementrb;				// elementrb for the rbtree
+		newNode			= new elementrb<ktype, vtype>;				// elementrb for the rbtree
 		newNode->key		= newKey;					//  store newKey
 		newNode->value		= newValue;  				//  store newValue
 		newNode->color		= true;					//  new nodes are always RED
@@ -367,7 +404,7 @@ void rbtree::insertItem(int newKey, int newValue) {
 		// must now search for where to insert newNode, i.e., find the correct parent and
 		// set the parent and child to point to each other properly
 		current = root;
-		if (current->key==-1) {										// insert as root
+		if (current->key==getnull<ktype>()) {										// insert as root
 			delete root;											//   delete old root
 			root			= newNode;								//   set root to newNode
 			leaf->parent   = newNode;								//   set leaf's parent
@@ -399,11 +436,12 @@ void rbtree::insertItem(int newKey, int newValue) {
 }
 
 // private house-keeping function for insertion
-void rbtree::insertCleanup(elementrb *z) {
+template <typename ktype, typename vtype>
+void rbtree<ktype, vtype>::insertCleanup(elementrb<ktype, vtype> *z) {
 	
 	if (z->parent==NULL) {								// fix now if z is root
 		z->color = false; return; }
-	elementrb *temp;
+	elementrb<ktype, vtype> *temp;
 	while (z->parent!=NULL && z->parent->color) {	// while z is not root and z's parent is RED
 		if (z->parent == z->parent->parent->left) {  // z's parent is LEFT-CHILD
 			temp = z->parent->parent->right;		// grab z's uncle
@@ -446,19 +484,20 @@ void rbtree::insertCleanup(elementrb *z) {
 
 // ******** Delete Functions ******************************************************************************
 // public delete function
-void rbtree::deleteItem(int killKey) {
-	elementrb *x, *y, *z;
+template <typename ktype, typename vtype>
+void rbtree<ktype, vtype>::deleteItem(ktype& killKey) {
+	elementrb<ktype, vtype> *x, *y, *z;
 	
 	z = findItem(killKey);
 	if (z == NULL) { return; }						// item not present; bail out
 
 	if (support==1) {								// -- attempt to delete the root
-		root->key		= -1;						// restore root node to default state
-		root->value    = -1;						// 
-		root->color    = false;						// 
-		root->parent   = NULL;						// 
+		root->key	= getnull<ktype>();						// restore root node to default state
+		root->value	= getnull<vtype>();						// 
+		root->color	= false;						// 
+		root->parent	= NULL;						// 
 		root->left	= leaf;						// 
-		root->right    = leaf;						// 
+		root->right	= leaf;						// 
 		support--;								// set support to zero
 		return;									// exit - no more work to do
 	}
@@ -494,8 +533,9 @@ void rbtree::deleteItem(int killKey) {
 	return;
 } // does not leak memory
 
-void rbtree::deleteCleanup(elementrb *x) {
-	elementrb *w, *t;
+template <typename ktype, typename vtype>
+void rbtree<ktype, vtype>::deleteCleanup(elementrb<ktype, vtype> *x) {
+	elementrb<ktype, vtype> *w, *t;
 	while ((x != root) && (x->color==false)) {			// until x is the root, or x is RED
 		if (x==x->parent->left) {					// branch on x being a LEFT-CHILD
 			w = x->parent->right;					// grab x's sibling
@@ -558,8 +598,9 @@ void rbtree::deleteCleanup(elementrb *x) {
 
 // ******** Rotation Functions ****************************************************************************
 
-void rbtree::rotateLeft(elementrb *x) {
-	elementrb *y;
+template <typename ktype, typename vtype>
+void rbtree<ktype, vtype>::rotateLeft(elementrb<ktype, vtype> *x) {
+	elementrb<ktype, vtype> *y;
 	// do pointer-swapping operations for left-rotation
 	y               = x->right;					// grab right child
 	x->right        = y->left;					// make x's RIGHT-CHILD be y's LEFT-CHILD
@@ -578,8 +619,9 @@ void rbtree::rotateLeft(elementrb *x) {
 	return;
 }
 
-void rbtree::rotateRight(elementrb *y) {
-	elementrb *x;
+template <typename ktype, typename vtype>
+void rbtree<ktype, vtype>::rotateRight(elementrb<ktype, vtype> *y) {
+	elementrb<ktype, vtype> *x;
 	// do pointer-swapping operations for right-rotation
 	x                = y->left;					// grab left child
 	y->left          = x->right;					// replace left child yith x's right subtree
@@ -600,14 +642,16 @@ void rbtree::rotateRight(elementrb *y) {
 
 // ******** Display Functions *****************************************************************************
 // public
-void rbtree::printTree() {
+template <typename ktype, typename vtype>
+void rbtree<ktype, vtype>::printTree() {
 	cout << "\nTREE SIZE = " << support << endl;
 	cout << "# "; printSubTree(root);
 	return;
 }
 
 //private
-void rbtree::printSubTree(elementrb *z) {
+template <typename ktype, typename vtype>
+void rbtree<ktype, vtype>::printSubTree(elementrb<ktype, vtype> *z) {
 	if (z==leaf) { return; }
 	else {
 		cout << "(" << z->key << " " << z->value << " " << z->color << ")"<<endl;
