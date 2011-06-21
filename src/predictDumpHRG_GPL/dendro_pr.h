@@ -55,7 +55,8 @@ using namespace std;
 #if !defined(str2int_INCLUDED)
 #define str2int_INCLUDED
 int str2int(const string& input) {
-	unsigned int output, i, p10;
+	unsigned int output, p10;
+	int i;
 	p10 = 1;
 	output = 0;
 	for (i = input.length()-1; i>=0; i--) {
@@ -800,18 +801,30 @@ bool dendro::importDendrogramStructure(const string in_file, rbtree<string, int>
 	root->label = 0;
 	for (int i=1; i<(n-1); i++) { internal[i].index = i; internal[i].label = -1; }
 	if (flag_debug) { cout << ">> dendro: allocated memory for internal and leaf arrays" << endl; }
-	// TODO:: read in hrg with real names
 	
 	// --- Import basic structure from file O(n)
 	ifstream fin(in_file.c_str(), ios::in);
-	while (fin >> bracketL >> sindex >> bracketR >> sL >> sLindex >> sLtype >> sR >> sRindex >> sRtype >> sp >> sprob >> se >> snume >> sn >> snumn) {
-		cout << bracketL << " " << sindex << " " << bracketR << " " << sL << " " << sLindex << " " << sLtype << " " << sR << " " << sRindex << " " << sRtype << " " << sp << " " << sprob << " " << se << " " << snume << " " << sn << " " << snumn << endl;
-		if (sLtype == "(D)") { internal[sindex].L = &internal[sLindex]; internal[sLindex].M = &internal[sindex]; } else 
-		if (sLtype == "(G)") { internal[sindex].L = &leaf[sLindex];     leaf[sLindex].M     = &internal[sindex]; } else
-			{ cout << "Error: " << bracketL << sindex << bracketR << sL << sLindex << sLtype << sR << sRindex << sRtype << sp << sprob << se << snume << sn << snumn << endl; safeExit = false; break; }
-		if (sRtype == "(D)") { internal[sindex].R = &internal[sRindex]; internal[sRindex].M = &internal[sindex]; } else
-		if (sRtype == "(G)") { internal[sindex].R = &leaf[sRindex];     leaf[sRindex].M     = &internal[sindex]; } else 
-			{ cout << "Error: " << bracketL << sindex << bracketR << sL << sLindex << sLtype << sR << sRindex << sRtype << sp << sprob << se << snume << sn << snumn << endl; safeExit = false; break; }
+	while (fin >> bracketL >> sindex >> bracketR >> sL >> sLname >> sLtype >> sR >> sRname >> sRtype >> sp >> sprob >> se >> snume >> sn >> snumn) {
+		cout << bracketL << " " << sindex << " " << bracketR << " " << sL << " " << sLname << " " << sLtype << " " << sR << " " << sRname << " " << sRtype << " " << sp << " " << sprob << " " << se << " " << snume << " " << sn << " " << snumn << endl;
+		if (sLtype == "(D)") { sLindex = str2int(sLname); internal[sindex].L = &internal[sLindex]; internal[sLindex].M = &internal[sindex]; } else 
+		if (sLtype == "(G)") { 
+			sLindex = names.findItem(sLname)->value;
+			if (sLindex==-1) { cout << "Error: vertex " << sLname << " not found in graph!\n"; safeExit = false; break;}
+			internal[sindex].L = &leaf[sLindex]; 
+			leaf[sLindex].M    = &internal[sindex];
+		} else {
+			cout << "Error: " << bracketL << sindex << bracketR << sL << sLindex << sLtype << sR << sRindex << sRtype << sp << sprob << se << snume << sn << snumn << endl; safeExit = false; break;
+		}
+
+		if (sRtype == "(D)") { sRindex = str2int(sRname); internal[sindex].R = &internal[sRindex]; internal[sRindex].M = &internal[sindex]; } else
+		if (sRtype == "(G)") {
+			sRindex = names.findItem(sRname)->value;
+			if (sRindex==-1) { cout << "Error: vertex " << sRname << " not found in graph!\n"; safeExit = false; break;}
+			internal[sindex].R = &leaf[sRindex];
+			leaf[sRindex].M    = &internal[sindex];
+		} else { 
+			cout << "Error: " << bracketL << sindex << bracketR << sL << sLindex << sLtype << sR << sRindex << sRtype << sp << sprob << se << snume << sn << snumn << endl; safeExit = false; break;
+		}
 		internal[sindex].p     = sprob; if (sprob < 0.0 || sprob > 1.0) { cout << "Error: " << bracketL << sindex << bracketR << sL << sLindex << sLtype << sR << sRindex << sRtype << sp << sprob << se << snume << sn << snumn << endl; safeExit = false; break; }
 		internal[sindex].e     = snume;
 		internal[sindex].n     = snumn;
