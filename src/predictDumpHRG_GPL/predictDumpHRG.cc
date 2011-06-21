@@ -553,7 +553,7 @@ void thisTest_Setup() {
 	mk = ioparm.n*(ioparm.n-1)/2 - ioparm.m/2;	// number of candidate missing edges
 	br_list = new pblock [mk];				// average likelihoods for each candidate
 	if (ioparm.flag_f_hrg) {
-		if (!(d->importDendrogramStructure(ioparm.f_hrg))) { cout << "Error: Malformed input file.\n"; return; }
+		if (!(d->importDendrogramStructure(ioparm.f_hrg, namesLUT))) { cout << "Error: Malformed input file.\n"; return; }
 	} else { 	d->buildDendrogram(); }
 	for (int i=0; i<mk; i++) { br_list[i].L = 0.0; br_list[i].i = -1; br_list[i].j = -1; }
 	return;

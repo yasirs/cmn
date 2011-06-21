@@ -50,6 +50,23 @@
 using namespace std;
 
 // ********************************************************************************************************
+// ******** Global Helper functions ******************************************************************************
+
+#if !defined(str2int_INCLUDED)
+#define str2int_INCLUDED
+int str2int(const string& input) {
+	unsigned int output, i, p10;
+	p10 = 1;
+	output = 0;
+	for (i = input.length()-1; i>=0; i--) {
+		output += p10*(int(input[i])-48);
+		p10 = p10 * 10;
+	}
+	return output;
+}
+#endif
+
+// ********************************************************************************************************
 // ******** Basic Structures ******************************************************************************
 
 #if !defined(list_INCLUDED)
@@ -262,7 +279,7 @@ public:
 	void			buildDendrogram();						// build dendrogram from g
 	void			clearDendrograph();						// delete dendrograph in prep for importDendrogramStructure
 	double		getLikelihood();						// return likelihood of G given D
-	bool			importDendrogramStructure(const string);	// read dendrogram structure from file
+	bool			importDendrogramStructure(const string, rbtree<string, int>& names );	// read dendrogram structure from file
 	bool			monteCarloMove(double&, bool&);			// make single MCMC move
 	void			refreshLikelihood();					// force refresh of log-likelihood value
 	void			sampleAdjacencyLikelihoods();				// sample dendrogram edge likelihoods and update edge histograms
@@ -756,9 +773,10 @@ double dendro::getLikelihood() { if (L > 0.0) { return 0.0; } else { return L; }
 
 // ********************************************************************************************************
 
-bool dendro::importDendrogramStructure(const string in_file) {
+bool dendro::importDendrogramStructure(const string in_file, rbtree<string, int>& names) {
 	string bracketL, bracketR, sL, sR, sLtype, sRtype, sp, se, sn;
 	int sindex, sLindex, sRindex, snume, snumn;
+	string sLname, sRname;
 	double sprob;
 	bool safeExit   = true;
 	bool flag_debug = true;
@@ -770,7 +788,7 @@ bool dendro::importDendrogramStructure(const string in_file) {
 	fscan.close();
 	
 	leaf		= new elementd [n];		// allocate memory for G, O(n)
-	internal  = new elementd [n-1];	// allocate memory for D, O(n)
+	internal  = new elementd [n-1];			// allocate memory for D, O(n)
 	d		= new interns(n-2);		// allocate memory for internal edges of D, O(n)
 	for (int i=0; i<n; i++) {		// initialize leaf nodes
 		leaf[i].type   = GRAPH;
@@ -782,6 +800,7 @@ bool dendro::importDendrogramStructure(const string in_file) {
 	root->label = 0;
 	for (int i=1; i<(n-1); i++) { internal[i].index = i; internal[i].label = -1; }
 	if (flag_debug) { cout << ">> dendro: allocated memory for internal and leaf arrays" << endl; }
+	// TODO:: read in hrg with real names
 	
 	// --- Import basic structure from file O(n)
 	ifstream fin(in_file.c_str(), ios::in);
