@@ -402,7 +402,7 @@ void recordBestHRG(const int step, const int count, const double thisL) {
 // ********************************************************************************************************
 
 void recordSampledPrediction(int sample) {
-	string fname = ioparm.d_dir + ioparm.dumpfolder + ioparm.s_scratch + "_"+boost::lexical_cast<string>( sample ) + "-predicted.wpairs";
+	string fname = ioparm.d_dir + ioparm.dumpfolder + ioparm.s_scratch + "_sampled"+boost::lexical_cast<string>( sample ) + "-predicted.wpairs";
 	ofstream fout(fname.c_str(), ios::trunc);
 	d->recordThisPrediction(fout);
 	fout.close();
@@ -414,11 +414,11 @@ void recordSampledHRG(const int sample, const double thisL) {
 	time_t t1;
 	
 	// write hrg to file
-	ioparm.f_dg = ioparm.d_dir + ioparm.dumpfolder + ioparm.s_scratch + "_"+boost::lexical_cast<string>( sample ) + "-dendro.hrg";
+	ioparm.f_dg = ioparm.d_dir + ioparm.dumpfolder + ioparm.s_scratch + "_sampled"+boost::lexical_cast<string>( sample ) + "-dendro.hrg";
 	d->recordDendrogramStructure(ioparm.f_dg);
 	
 	// write statistics about hrg to file
-	ioparm.f_dg_info = ioparm.d_dir + ioparm.dumpfolder + ioparm.s_scratch + "_"+boost::lexical_cast<string>( sample ) + "-dendro.info";
+	ioparm.f_dg_info = ioparm.d_dir + ioparm.dumpfolder + ioparm.s_scratch + "_sampled"+boost::lexical_cast<string>( sample ) + "-dendro.info";
 
 	t1 = time(&t1); 
 	ofstream fout(ioparm.f_dg_info.c_str(), ios::trunc);
@@ -433,8 +433,8 @@ void recordSampledHRG(const int sample, const double thisL) {
 	fout << "OutputTime     : " << asctime(localtime(&t1));
 	fout << "NumSampledDendo: " << sample			<< "\n";
 	fout << "LogLikelihood  : " << thisL		<< "\n";
-	fout << "HRG            : " << ioparm.s_scratch + "_best-dendro.hrg" << "\n";
-	fout << "InfoFile       : " << ioparm.s_scratch + "_best-dendro.info"  << "\n";
+	fout << "HRG            : " << ioparm.s_scratch + "_sampled"+boost::lexical_cast<string>( sample )+"-dendro.hrg" << "\n";
+	fout << "InfoFile       : " << ioparm.s_scratch + "_sampled"+boost::lexical_cast<string>( sample )+"-dendro.info"  << "\n";
 	fout.close();
 	
 	return;
@@ -554,7 +554,13 @@ void thisTest_Setup() {
 	br_list = new pblock [mk];				// average likelihoods for each candidate
 	if (ioparm.flag_f_hrg) {
 		if (!(d->importDendrogramStructure(ioparm.f_hrg, namesLUT))) { cout << "Error: Malformed input file.\n"; return; }
-	} else { 	d->buildDendrogram(); }
+	} else {
+		d->buildDendrogram();
+		string fname = ioparm.f_hrg + "-predicted.wpairs";
+		ofstream fout(fname.c_str(), ios::trunc);
+		d->recordThisPrediction(fout);
+		fout.close();
+	}
 	for (int i=0; i<mk; i++) { br_list[i].L = 0.0; br_list[i].i = -1; br_list[i].j = -1; }
 	return;
 }

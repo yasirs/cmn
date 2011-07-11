@@ -797,9 +797,9 @@ bool dendro::importDendrogramStructure(const string in_file, rbtree<string, int>
 		leaf[i].index  = i;
 		leaf[i].n		= 1;
 	}
-	root		  = &internal[0];		// initialize internal nodes
-	root->label = 0;
-	for (int i=1; i<(n-1); i++) { internal[i].index = i; internal[i].label = -1; }
+	//root		  = &internal[0];		// initialize internal nodes
+	//root->label = 0;
+	for (int i=0; i<(n-1); i++) { internal[i].index = i; internal[i].label = -1; }
 	if (flag_debug) { cout << ">> dendro: allocated memory for internal and leaf arrays" << endl; }
 	
 	// --- Import basic structure from file O(n)
@@ -838,9 +838,44 @@ bool dendro::importDendrogramStructure(const string in_file, rbtree<string, int>
 	elementd* curr;
 	for (int i=0; i<n; i++) {
 		curr = &leaf[i];
-		while (curr != NULL) { if (curr->label == -1 || curr->label > leaf[i].label) { curr->label = leaf[i].label; } curr = curr->M; }
+		while (curr != NULL) {
+			if (curr->label == -1 || curr->label > leaf[i].label) {
+				curr->label = leaf[i].label;
+			}
+			if (curr->M==NULL) {
+				// this is the root
+				root = curr;
+			}
+			curr = curr->M;
+		}
 	}
-	if (flag_debug) { cout << ">> dendro: labeled all internal vertices" << endl; }
+	if (flag_debug) {
+		cout << ">> dendro: labeled all internal vertices" << endl;
+		if (root->label != 0) {
+			cout << "Error: root should have label 0\n";
+			safeExit = false;
+			return false;
+		}
+		for (int i=0;i<(n-1); i++) {
+			if (internal[i].label != min(internal[i].L->label, internal[i].R->label)) {
+				if (internal[i].L->M != &internal[i]) {
+					std::cout << "Error: left child doesn't have the correct ancestor, i = "<<i<<endl;
+					safeExit = false;
+					return false;
+				}
+				if (internal[i].R->M != &internal[i]) {
+					std::cout << "Error: right child doesn't have the correct ancestor, i = "<<i<<endl;
+					safeExit = false;
+					return false;
+				}
+				cout << "Error: labels wrong here: i = "<<i<<",label = "<<internal[i].label<<", L label = "<<internal[i].L->label;
+				cout << ", R label = " << internal[i].R->label<<endl;
+				cout << "type i = "<<internal[i].type <<", L type = "<<internal[i].L->type <<", R type = "<<internal[i].R->type<<endl;
+				safeExit = false;
+				return false;
+			}
+		}
+	}
 	
 	// --- Exchange children to enforce order-property O(n)
 	int temp; elementd *tempe;
@@ -873,7 +908,16 @@ bool dendro::importDendrogramStructure(const string in_file, rbtree<string, int>
 		nL_nR = internal[i].L->n*internal[i].R->n;
 		ei    = internal[i].e;
 		if (ei == 0 or ei == nL_nR) { dL = 0.0; }
-		else                        { dL = (double)(ei) * log(internal[i].p) + (double)(nL_nR - ei) * log(1.0-internal[i].p); }
+		else {
+			dL = (double)(ei) * log(internal[i].p) + (double)(nL_nR - ei) * log(1.0-internal[i].p);
+			if (flag_debug) {
+				if (dL>0) {
+					cout << "Error here: dL = "<<dL<<", i= "<<i<<", p= "<<internal[i].p<<", n= "<<internal[i].n<<", e="<<internal[i].e<<endl;
+					cout << "nL = "<<internal[i].L->n<<", nr = "<<internal[i].R->n<<endl;
+					safeExit= false;
+				}
+			}
+		}
 		internal[i].logL = dL;
 		L += dL;
 	}
