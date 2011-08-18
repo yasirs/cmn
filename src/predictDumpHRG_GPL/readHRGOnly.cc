@@ -141,14 +141,6 @@ int main(int argc, char * argv[]) {
 		readPairsFile();							// read input .pairs file
 		thisTest_Setup();							// setup the data structure for the test
 
-		cout << ">> beginning convergence to equilibrium\n";
-		if (!(MCMCEquilibrium_Find()))   { return 0; }	// run it to equilibrium
-		cout << "\n>> convergence critera met\n>> beginning sampling\n";
-		if (!(MCMCEquilibrium_Sample())) { return 0; }	// sample likelihoods for missing connections
-		cout << ">> sampling finished" << endl;
-
-		rankCandidatesByProbability();				// rank-order the results
-		recordTotalPredictions();						// record predictions to file
 		
 		return 1;
 	} else { return 0; }
