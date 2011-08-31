@@ -194,7 +194,7 @@ bool MCMCEquilibrium_Find() {
 
 		// Check if localized entropy appears to have stabilized; if you want to use a 
 		// different convergence criteria, this is where you would change things.
-		if (fabs(newMeanL - oldMeanL)/65536.0 < 1.0 and (t>10000*ioparm.n or ioparm.flag_f_hrg)) { flag_eq = true; }
+		if (fabs(newMeanL - oldMeanL)/65536.0 < 1.0 or (t>100*ioparm.n or ioparm.flag_f_hrg)) { flag_eq = true; }
 	}
 	return true;
 }
@@ -205,7 +205,7 @@ bool MCMCEquilibrium_Sample() {
 	double	dL, Likeli, bestL;
 	bool		flag_taken;
 	double	ptest       = 1.0/10.0; //(double)(4.0/(double)(ioparm.n));
-	int		thresh      = 100*ioparm.n;
+	int		thresh      = 1*ioparm.n;
 	int		t           = 1;
 	int		sample_num  = 0;
 	
